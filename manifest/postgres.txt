@@ -1,0 +1,125 @@
+# postgres-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 5Gi   # Adjust size as needed
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce   # The volume can be mounted as read-write by a single node
+  persistentVolumeReclaimPolicy: Retain   # Or 'Recycle'/'Delete', depending on your use case
+  storageClassName: csi-disk
+  hostPath:             # Using hostPath for local storage; use another provisioner for cloud
+    path: /mnt/data/postgres
+
+---
+# postgres-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi   # Size should match or be smaller than the PV size
+  storageClassName: csi-disk  # Must match the storage class in the PV
+
+---
+# postgres-configmap.yamls
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_USER: "ralf"
+  POSTGRES_PASSWORD: "Qwerty123"
+  POSTGRES_DB: "bookstore_auth"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+type: Opaque
+data:
+  POSTGRES_USER: cmFsZg==        # base64 encoded "ralf"
+  POSTGRES_PASSWORD: UXdlcnR5MTIzNA== # base64 encoded "Qwerty123"
+  POSTGRES_DB: Ym9va3N0b3JlX2F1dGg=   # base64 encoded "bookstore_auth"
+
+---
+
+
+# postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          # envFrom:
+          #   - configMapRef:
+          #       name: postgres-config
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-secret
+                key: POSTGRES_PASSWORD
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                key: POSTGRES_DB
+                name: postgres-secret
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-storage
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+
+---
+# postgres-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+
+

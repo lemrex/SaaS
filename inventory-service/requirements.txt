@@ -1,0 +1,10 @@
+Flask==2.2.2                # The web framework
+Flask-CORS==3.0.10          # CORS support for Flask
+PyJWT==2.6.0                # JWT handling
+pymongo==4.3.2              # MongoDB driver for Python
+redis==4.5.5                # Redis client for Python
+requests==2.26.0            # HTTP library
+python-dotenv==1.0.0        # For loading environment variables from a .env file
+gunicorn==20.1.0            # WSGI server for production
+werkzeug==2.2.2             # Fix for missing 'url_quote' import
+gunicorn==20.1.0 

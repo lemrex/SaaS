@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bookms-secret
+  namespace: {{tenant_name}}
+type: Opaque
+data:
+  JWT_SECRET: c3VwZXJzZWNyZXRrZXkxMjM=
+  DB_USER: cm9vdA==
+  DB_HOST: MTEwLjIzOC43NC4xNDE=
+  DB_NAME: Ym9va21z
+  DB_PASSWORD: I3F3cnR5MTIz
+  DB_PORT: NTQzMg==
+
+---
+
+# configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookms-config
+  namespace: {{tenant_name}}
+data:
+  MONGODB_URI: "mongodb://mongo:27017/auth-service"
+  POSTGRES_USER: "ralf"
+  POSTGRES_PASSWORD: "Qwerty123"
+  POSTGRES_DB: "bookstore_auth"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  REDIS_HOST: "redis"
+  RABBITMQ_URL: "amqp://rabbitmq"
+  JWT_SECRET: "ralf"
+
+---
+# auth-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: {{tenant_name}}
+  labels:
+    app: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      imagePullSecrets:
+        - name: default-secret
+      containers:
+        - name: auth-service
+          image: swr.af-south-1.myhuaweicloud.com/ralf/auth-api:efd2af4df959640451a8c4c47430a8ee9211dc3e
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: auth-service-secrets
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+---
+
+# auth-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: {{tenant_name}}
+  labels:
+    app: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+
