@@ -40,8 +40,9 @@ jobs:
 
       - name: Register Kubernetes Cluster in ArgoCD
         run: |
-          # Export the Kubeconfig to a temporary file
+          ls
           echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
+          ls
           cat kubeconfig.yaml
           
           # Register the Kubernetes cluster with ArgoCD
