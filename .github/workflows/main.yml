@@ -1,0 +1,72 @@
+name: Terraform & ArgoCD Cluster Registration, Repository & App Creation
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # TF_VAR_tenant_name: ${{ secrets.TF_VAR_tenant_name }}
+      # TF_VAR_db_password: ${{ secrets.TF_VAR_password }}
+      # TF_VAR_username: ${{ secrets.TF_VAR_username }}
+      # TF_VAR_access_key: ${{ secrets.TF_VAR_access_key }}
+      # TF_VAR_secret_key: ${{ secrets.TF_VAR_secret_key }}
+      ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}  # ArgoCD server address
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}    # ArgoCD Admin token
+      GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}    # Git repo URL for ArgoCD to sync from
+      GIT_REPO_BRANCH: ${{ secrets.GIT_REPO_BRANCH }}  # Branch to use for ArgoCD application
+
+    steps:
+      # - name: Checkout repository
+      #   uses: actions/checkout@v3
+
+      # - name: Set up Terraform
+      #   uses: hashicorp/setup-terraform@v2
+      #   with:
+      #     terraform_version: 1.5.7
+
+      # - name: Terraform Init
+      #   run: terraform init
+
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve
+
+      # - name: Capture Kubeconfig and Export it
+      #   run: |
+      #     echo "KUBECONFIG=$(terraform output -raw kubeconfig)" >> $GITHUB_ENV
+
+      - name: Register Kubernetes Cluster in ArgoCD
+        run: |
+          # Export the Kubeconfig to a temporary file
+          echo ${{KUBECONFIG}} > kubeconfig.yaml
+          
+          # Register the Kubernetes cluster with ArgoCD
+          argocd cluster add --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
+
+      - name: Register Git Repository in ArgoCD
+        run: |
+          # Add the Git repository to ArgoCD
+          argocd repo add $GIT_REPO_URL \
+            --name my-repo \
+            --username ${{ secrets.GIT_REPO_USERNAME }} \
+            --password ${{ secrets.GIT_REPO_PASSWORD }} \
+            --type git \
+            --insecure-ignore-host-key
+
+      - name: Create ArgoCD Application
+        run: |
+          # Create the ArgoCD application from the Git repository
+          argocd app create my-app \
+            --repo $GIT_REPO_URL \
+            --path ./man \
+            --dest-server https://kubernetes.default.svc \
+            --dest-namespace default \
+            --revision $GIT_REPO_BRANCH \
+            --sync-policy automated \
+            --sync-option Prune=true
+          
+          # Sync the application to apply the resources
+          argocd app sync my-app
