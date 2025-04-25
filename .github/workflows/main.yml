@@ -49,7 +49,7 @@ jobs:
           cat kubeconfig.yaml
           
           # Register the Kubernetes cluster with ArgoCD
-          argocd cluster add --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
+          argocd cluster add external --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
 
       - name: Register Git Repository in ArgoCD
         run: |
