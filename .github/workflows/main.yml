@@ -41,7 +41,7 @@ jobs:
       - name: Register Kubernetes Cluster in ArgoCD
         run: |
           # Export the Kubeconfig to a temporary file
-          echo ${{KUBECONFIG}} > kubeconfig.yaml
+          echo ${{secrets.KUBECONFIG}} > kubeconfig.yaml
           
           # Register the Kubernetes cluster with ArgoCD
           argocd cluster add --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
