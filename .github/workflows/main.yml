@@ -14,11 +14,19 @@ jobs:
       GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}    # Git repo URL for ArgoCD to sync from
       GIT_REPO_BRANCH: ${{ secrets.GIT_REPO_BRANCH }}  # Branch to use for ArgoCD application
 
+
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v2.6.2/argocd-linux-amd64
+          sudo mv argocd-linux-amd64 /usr/local/bin/argocd
+          sudo chmod +x /usr/local/bin/argocd
+          argocd version  
+      
       - name: Register Kubernetes Cluster in ArgoCD
         run: |
           ls
