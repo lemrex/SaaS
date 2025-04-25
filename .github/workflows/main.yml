@@ -25,11 +25,16 @@ jobs:
       - name: Install ArgoCD CLI
         run: |
           ls
-          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v2.6.2/argocd-linux-amd64
-          sudo mv argocd-linux-amd64 /usr/local/bin/argocd
-          sudo chmod +x /usr/local/bin/argocd
-          argocd version  
-      
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+          rm argocd-linux-amd64
+          # sudo mv argocd-linux-amd64 /usr/local/bin/argocd
+          # sudo chmod +x /usr/local/bin/argocd
+          argocd 
+          argocd version
+     
+
+
       # - name: Register Kubernetes Cluster in ArgoCD
       #   run: |
       #     ls
