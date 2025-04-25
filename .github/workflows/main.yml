@@ -15,7 +15,7 @@ jobs:
       GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}    # Git repo URL for ArgoCD to sync from
       GIT_REPO_BRANCH: ${{ secrets.GIT_REPO_BRANCH }}  # Branch to use for ArgoCD application
       ARGOCD_INSECURE: "true"  # Only if using self-signed certs
-      ARGO_PWD: ${{ ARGO_PWD }}
+      ARGO_PWD: ${{ secrets.ARGO_PWD }}
 
 
 
