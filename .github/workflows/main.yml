@@ -2,7 +2,8 @@ name: Terraform & ArgoCD Cluster Registration, Repository & App Creation
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -22,43 +23,44 @@ jobs:
 
       - name: Install ArgoCD CLI
         run: |
+          ls
           curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/v2.6.2/argocd-linux-amd64
           sudo mv argocd-linux-amd64 /usr/local/bin/argocd
           sudo chmod +x /usr/local/bin/argocd
           argocd version  
       
-      - name: Register Kubernetes Cluster in ArgoCD
-        run: |
-          ls
-          touch kubeconfig.yaml
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
-          ls
-          cat kubeconfig.yaml
+      # - name: Register Kubernetes Cluster in ArgoCD
+      #   run: |
+      #     ls
+      #     touch kubeconfig.yaml
+      #     echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
+      #     ls
+      #     cat kubeconfig.yaml
           
-          # Register the Kubernetes cluster with ArgoCD
-          argocd cluster add --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
+      #     # Register the Kubernetes cluster with ArgoCD
+      #     argocd cluster add --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
 
-      - name: Register Git Repository in ArgoCD
-        run: |
-          # Add the Git repository to ArgoCD
-          argocd repo add $GIT_REPO_URL \
-            --name my-repo \
-            --username ${{ secrets.GIT_REPO_USERNAME }} \
-            --password ${{ secrets.GIT_REPO_PASSWORD }} \
-            --type git \
-            --insecure-ignore-host-key
+      # - name: Register Git Repository in ArgoCD
+      #   run: |
+      #     # Add the Git repository to ArgoCD
+      #     argocd repo add $GIT_REPO_URL \
+      #       --name my-repo \
+      #       --username ${{ secrets.GIT_REPO_USERNAME }} \
+      #       --password ${{ secrets.GIT_REPO_PASSWORD }} \
+      #       --type git \
+      #       --insecure-ignore-host-key
 
-      - name: Create ArgoCD Application
-        run: |
-          # Create the ArgoCD application from the Git repository
-          argocd app create my-app \
-            --repo $GIT_REPO_URL \
-            --path ./man \
-            --dest-server https://kubernetes.default.svc \
-            --dest-namespace default \
-            --revision $GIT_REPO_BRANCH \
-            --sync-policy automated \
-            --sync-option Prune=true
+      # - name: Create ArgoCD Application
+      #   run: |
+      #     # Create the ArgoCD application from the Git repository
+      #     argocd app create my-app \
+      #       --repo $GIT_REPO_URL \
+      #       --path ./man \
+      #       --dest-server https://kubernetes.default.svc \
+      #       --dest-namespace default \
+      #       --revision $GIT_REPO_BRANCH \
+      #       --sync-policy automated \
+      #       --sync-option Prune=true
           
-          # Sync the application to apply the resources
-          argocd app sync my-app
+      #     # Sync the application to apply the resources
+      #     argocd app sync my-app
