@@ -10,11 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}  # ArgoCD server address
-      # ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}    # ArgoCD Admin token
-      # GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}    # Git repo URL for ArgoCD to sync from
+      ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}  # ArgoCD server address
+      ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}    # ArgoCD Admin token
+      GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}    # Git repo URL for ArgoCD to sync from
       GIT_REPO_BRANCH: ${{ secrets.GIT_REPO_BRANCH }}  # Branch to use for ArgoCD application
-      # ARGOCD_INSECURE: "true"  # Only if using self-signed certs
+      ARGOCD_INSECURE: "true"  # Only if using self-signed certs
+      ARGO_PWD: ${{ ARGO_PWD }}
 
 
 
@@ -32,7 +33,15 @@ jobs:
           # sudo chmod +x /usr/local/bin/argocd
           argocd 
           argocd version
-     
+
+          
+      - name: Login to ArgoCD
+        run: |
+          argocd login $ARGOCD_SERVER \
+            --grpc-web \
+            --insecure \
+            --username admin \
+            --password $ARGO_PWD
 
 
       # - name: Register Kubernetes Cluster in ArgoCD
