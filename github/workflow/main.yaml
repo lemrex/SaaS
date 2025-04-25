@@ -61,7 +61,7 @@ jobs:
           # Create the ArgoCD application from the Git repository
           argocd app create my-app \
             --repo $GIT_REPO_URL \
-            --path ./manifests \
+            --path ./man \
             --dest-server https://kubernetes.default.svc \
             --dest-namespace default \
             --revision $GIT_REPO_BRANCH \
