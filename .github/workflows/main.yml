@@ -51,6 +51,13 @@ jobs:
           # Register the Kubernetes cluster with ArgoCD
           argocd cluster add external --kubeconfig kubeconfig.yaml --name tenant-a --server $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN
 
+      - name: Create ArgoCD Project
+        run: |
+          # Create ArgoCD project
+          argocd proj create tenant-a-project \
+            --description "project description" \
+
+
       - name: Register Git Repository in ArgoCD
         run: |
           # Add the Git repository to ArgoCD
@@ -66,7 +73,7 @@ jobs:
           argocd app create my-app \
             --repo $GIT_REPO_URL \
             --path ./man \
-            --dest-server https://kubernetes.default.svc \
+            --dest-server tenant-a \
             --dest-namespace default \
             --revision $GIT_REPO_BRANCH \
             --sync-policy automated \
