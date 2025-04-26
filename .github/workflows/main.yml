@@ -70,10 +70,10 @@ jobs:
       - name: Create ArgoCD Application
         run: |
           # Create the ArgoCD application from the Git repository
-          argocd app create my-app \
+          argocd app create my-app1 \
             --repo $GIT_REPO_URL \
             --path ./man \
-            --dest-server tenant-a \
+            --dest-name tenant-a \
             --dest-namespace default \
             --revision $GIT_REPO_BRANCH \
             --sync-policy automated \
